@@ -1,7 +1,9 @@
 import { navigate } from "raviger";
 import React, { useEffect, useState } from "react";
 import { getLocalForms, saveFormData } from "./Form";
-import { formData } from "./model";
+import Select from "./Inputs/Select";
+import Text from "./Inputs/Text";
+import { formData, OptionType, SelectTypes, TextTypes } from "./model";
 
 const Questions = (props: { id: any; qno: any }) => {
   const [form, setForm] = useState<formData>();
@@ -33,7 +35,57 @@ const Questions = (props: { id: any; qno: any }) => {
               {form?.formFields[props.qno]?.label}
             </span>
           </div>
-          <input
+          {form?.formFields[props.qno]?.type === "select" ||
+          form?.formFields[props.qno]?.type === "radio" ||
+          form?.formFields[props.qno]?.type === "checkbox" ||
+          form?.formFields[props.qno]?.type === "multiselect" ? (
+            <Select
+              type={form?.formFields[props.qno]?.type as SelectTypes}
+              value={form?.formFields[props.qno]?.value}
+              label={form?.formFields[props.qno]?.label}
+              changeHandler={(
+                e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+              ) => {
+                setForm({
+                  ...form,
+                  formFields: form.formFields.map((item, idx) => {
+                    if (idx === Number(props.qno)) {
+                      return { ...item, value: e.target.value };
+                    }
+                    return item;
+                  }),
+                });
+              }}
+              options={form?.formFields[props.qno]?.options as OptionType[]}
+            />
+          ) : form?.formFields[props.qno]?.type === "text" ||
+            form?.formFields[props.qno]?.type === "email" ||
+            form?.formFields[props.qno]?.type === "password" ||
+            form?.formFields[props.qno]?.type === "date" ||
+            form?.formFields[props.qno]?.type === "textarea" ? (
+            <Text
+              type={form?.formFields[props.qno]?.type as TextTypes}
+              value={form?.formFields[props.qno]?.value}
+              label={form?.formFields[props.qno]?.label}
+              changeHandler={(
+                e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+              ) => {
+                setForm({
+                  ...form,
+                  formFields: form.formFields.map((item, idx) => {
+                    if (idx === Number(props.qno)) {
+                      return { ...item, value: e.target.value };
+                    }
+                    return item;
+                  }),
+                });
+              }}
+              placeholder={form?.formFields[props.qno]?.label}
+            />
+          ) : (
+            <></>
+          )}
+          {/* <input
             className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
             type={form?.formFields[props.qno]?.type}
             value={form?.formFields[props.qno]?.value}
@@ -49,7 +101,7 @@ const Questions = (props: { id: any; qno: any }) => {
               });
             }}
             placeholder={form?.formFields[props.qno]?.label}
-          />
+          /> */}
         </div>
 
         <div className="flex justify-center gap-2">

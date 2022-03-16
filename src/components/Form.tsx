@@ -1,8 +1,9 @@
 import { navigate } from "raviger";
 import React, { useEffect, useRef } from "react";
-import { formData } from "./model";
+import AddOptions from "./Inputs/AddOptions";
+import { formData, formField, InputTypes, OptionType } from "./model";
 
-const formFields = [
+const formFields: formField[] = [
   { id: 1, label: "First Name", type: "text", value: "" },
   { id: 2, label: "Last Name", type: "text", value: "" },
   { id: 3, label: "Email", type: "email", value: "" },
@@ -50,7 +51,12 @@ export default function Form(props: { formId: number }) {
   const [formState, setFormState] = React.useState<formData>(() =>
     intialState(props.formId)
   );
-  const [newField, setNewField] = React.useState({ title: "", type: "text" });
+  const [newField, setNewField] = React.useState<formField>({
+    id: Number(Date.now()),
+    label: "",
+    type: "text",
+    value: "",
+  });
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,6 +74,27 @@ export default function Form(props: { formId: number }) {
     }, 1000);
     return () => clearTimeout(timeout);
   }, [formState, props.formId]);
+
+  const optionAddHandler = (options: OptionType[], newOption: OptionType) => {
+    const newOptions = [...options, newOption];
+    return newOptions;
+  };
+
+  const optionRemoveHandler = (options: OptionType[], option: OptionType) => {
+    const newOptions = options.filter((opt) => opt.id !== option.id);
+    return newOptions;
+  };
+
+  const optionChangeHandler = (
+    options: OptionType[],
+    option: OptionType,
+    value: string
+  ) => {
+    const newOptions = options.map((opt) => {
+      return opt.id === option.id ? { ...opt, value } : opt;
+    });
+    return newOptions;
+  };
 
   const clearFormCB = () => {
     setFormState({
@@ -127,26 +154,69 @@ export default function Form(props: { formId: number }) {
               placeholder={field.label}
             />
             <span className="w-full text-sm px-2">Field Type</span>
-            <input
+            <select
               className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
-              type={"text"}
               value={field.type}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 setFormState({
                   ...formState,
                   formFields: formState.formFields.map((item) => {
+                    const type = e.target.value as InputTypes;
                     if (item.id === field.id) {
-                      return { ...item, type: e.target.value };
+                      if (
+                        type === "select" ||
+                        type === "radio" ||
+                        type === "checkbox" ||
+                        type === "multiselect"
+                      ) {
+                        return { ...item, type, options: [] };
+                      }
+                      return { ...item, type };
                     }
                     return item;
                   }),
                 });
               }}
-              placeholder={field.label}
-            />
+            >
+              <option value={"text"}>Text</option>
+              <option value={"email"}>Email</option>
+              <option value={"date"}>Date</option>
+              <option value={"password"}>Password</option>
+              <option value={"textarea"}>Text Area</option>
+              <option value={"select"}>Dropdown</option>
+              <option value={"radio"}>Radio Button</option>
+              <option value={"checkbox"}>Checkbox</option>
+              <option value={"multiselect"}>Multi-Select Dropdown</option>
+            </select>
+            {field.type &&
+            field.options &&
+            (field.type === "select" ||
+              field.type === "radio" ||
+              field.type === "checkbox" ||
+              field.type === "multiselect") ? (
+              <AddOptions
+                options={field.options}
+                optionAddHandler={optionAddHandler}
+                optionRemoveHandler={optionRemoveHandler}
+                stateSetFunction={(options: OptionType[]) =>
+                  setFormState({
+                    ...formState,
+                    formFields: formState.formFields.map((item) => {
+                      if (item.id === field.id) {
+                        return { ...item, options };
+                      }
+                      return item;
+                    }),
+                  })
+                }
+                optionChangeHandler={optionChangeHandler}
+              />
+            ) : (
+              <></>
+            )}
           </div>
           <button
-            className="bg-blue-600 text-white rounded-lg p-2 m-2"
+            className="bg-red-600 text-white rounded-lg p-2 m-2"
             onClick={() =>
               setFormState(() => {
                 const newState = formState.formFields.filter(
@@ -164,44 +234,84 @@ export default function Form(props: { formId: number }) {
       <div className="flex w-full justify-between items-end">
         <input
           type="text"
-          value={newField.title}
+          value={newField.label}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setNewField({ ...newField, title: e.target.value })
+            setNewField({ ...newField, label: e.target.value })
           }
           className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
           placeholder="Add New Field"
         />
-        <input
-          type="text"
-          value={newField.type}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setNewField({ ...newField, type: e.target.value })
-          }
+        <select
           className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
-          placeholder="Add New Field"
-        />
-
+          value={newField?.type}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            const type = e.target.value as InputTypes;
+            if (
+              type === "select" ||
+              type === "radio" ||
+              type === "checkbox" ||
+              type === "multiselect"
+            ) {
+              return setNewField({ ...newField, type, options: [] });
+            }
+            return setNewField({ ...newField, type });
+          }}
+        >
+          <option value={"text"}>Text</option>
+          <option value={"email"}>Email</option>
+          <option value={"date"}>Date</option>
+          <option value={"password"}>Password</option>
+          <option value={"textarea"}>Text Area</option>
+          <option value={"select"}>Dropdown</option>
+          <option value={"radio"}>Radio Button</option>
+          <option value={"checkbox"}>Checkbox</option>
+          <option value={"multiselect"}>Multi-Select Dropdown</option>
+        </select>
         <button
           className="bg-blue-600 text-white rounded-lg p-2 m-2 w-full"
           onClick={() => {
             setFormState({
               ...formState,
               formFields: [
-                ...formState.formFields,
+                ...(formState.formFields as formField[]),
                 {
                   id: Number(Date.now()),
-                  label: newField.title,
+                  label: newField?.label,
                   value: "",
-                  type: newField.type,
+                  type: newField?.type as InputTypes,
+                  options: newField?.options,
                 },
               ],
             });
-            setNewField({ title: "", type: "text" });
+            setNewField({
+              id: Number(Date.now()),
+              label: "",
+              type: "text",
+              value: "",
+            });
           }}
         >
           Add Field
         </button>
       </div>
+      {newField.type &&
+      newField.options &&
+      (newField.type === "select" ||
+        newField.type === "radio" ||
+        newField.type === "checkbox" ||
+        newField.type === "multiselect") ? (
+        <AddOptions
+          options={newField.options}
+          optionAddHandler={optionAddHandler}
+          optionRemoveHandler={optionRemoveHandler}
+          stateSetFunction={(options: OptionType[]) =>
+            setNewField({ ...newField, options })
+          }
+          optionChangeHandler={optionChangeHandler}
+        />
+      ) : (
+        <></>
+      )}
       <button
         className="bg-blue-600 text-white rounded-lg p-2 m-2 w-full"
         onClick={() => {
