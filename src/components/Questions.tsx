@@ -1,5 +1,6 @@
 import { navigate } from "raviger";
 import React, { useEffect, useState } from "react";
+import ReactSelect, { MultiValue } from "react-select";
 import { getLocalForms, saveFormData } from "./Form";
 import Select from "./Inputs/Select";
 import Text from "./Inputs/Text";
@@ -37,8 +38,7 @@ const Questions = (props: { id: any; qno: any }) => {
           </div>
           {form?.formFields[props.qno]?.type === "select" ||
           form?.formFields[props.qno]?.type === "radio" ||
-          form?.formFields[props.qno]?.type === "checkbox" ||
-          form?.formFields[props.qno]?.type === "multiselect" ? (
+          form?.formFields[props.qno]?.type === "checkbox" ? (
             <Select
               type={form?.formFields[props.qno]?.type as SelectTypes}
               value={form?.formFields[props.qno]?.value}
@@ -65,7 +65,7 @@ const Questions = (props: { id: any; qno: any }) => {
             form?.formFields[props.qno]?.type === "textarea" ? (
             <Text
               type={form?.formFields[props.qno]?.type as TextTypes}
-              value={form?.formFields[props.qno]?.value}
+              value={form?.formFields[props.qno]?.value as string}
               label={form?.formFields[props.qno]?.label}
               changeHandler={(
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -81,6 +81,29 @@ const Questions = (props: { id: any; qno: any }) => {
                 });
               }}
               placeholder={form?.formFields[props.qno]?.label}
+            />
+          ) : form?.formFields[props.qno]?.type === "multiselect" ? (
+            <ReactSelect
+              className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
+              options={form?.formFields[props.qno]?.options?.map((op) => ({
+                value: op.value,
+                label: op.value,
+              }))}
+              onChange={(e: MultiValue<{ value: string; label: string }>) =>
+                setForm({
+                  ...form,
+                  formFields: form.formFields.map((item, idx) => {
+                    if (idx === Number(props.qno)) {
+                      return {
+                        ...item,
+                        value: e.map((x) => x.value),
+                      };
+                    }
+                    return item;
+                  }),
+                })
+              }
+              isMulti={true}
             />
           ) : (
             <></>

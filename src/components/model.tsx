@@ -9,7 +9,7 @@ export type InputTypes = TextTypes | SelectTypes;
 export type formField = {
   id: number;
   label: string;
-  value: string;
+  value: string | string[];
   type: InputTypes;
   options?: OptionType[];
 };

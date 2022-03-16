@@ -277,7 +277,7 @@ export default function Form(props: { formId: number }) {
                 {
                   id: Number(Date.now()),
                   label: newField?.label,
-                  value: "",
+                  value: newField?.type === "multiselect" ? [] : "",
                   type: newField?.type as InputTypes,
                   options: newField?.options,
                 },

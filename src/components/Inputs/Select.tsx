@@ -3,7 +3,7 @@ import { OptionType, SelectTypes } from "../model";
 
 interface SelectInputProps {
   type: SelectTypes;
-  value: string;
+  value: string | string[];
   changeHandler: (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => void;
@@ -28,7 +28,6 @@ const Select = ({
         >
           <option value="">Select an Option</option>
           {options.map((op) => {
-            console.log(op);
             return (
               <option key={op.id} value={op.value}>
                 {op.value}
