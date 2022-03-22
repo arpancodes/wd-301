@@ -4,7 +4,14 @@ import ReactSelect, { MultiValue } from "react-select";
 import { getLocalForms, saveFormData } from "./Form";
 import Select from "./Inputs/Select";
 import Text from "./Inputs/Text";
-import { formData, OptionType, SelectTypes, TextTypes } from "./model";
+import {
+  formData,
+  formField,
+  OptionType,
+  SelectField,
+  SelectTypes,
+  TextTypes,
+} from "./model";
 
 const Questions = (props: { id: any; qno: any }) => {
   const [form, setForm] = useState<formData>();
@@ -56,7 +63,10 @@ const Questions = (props: { id: any; qno: any }) => {
                   }),
                 });
               }}
-              options={form?.formFields[props.qno]?.options as OptionType[]}
+              options={
+                (form?.formFields[props.qno] as SelectField)
+                  .options as OptionType[]
+              }
             />
           ) : form?.formFields[props.qno]?.type === "text" ||
             form?.formFields[props.qno]?.type === "email" ||
@@ -85,7 +95,9 @@ const Questions = (props: { id: any; qno: any }) => {
           ) : form?.formFields[props.qno]?.type === "multiselect" ? (
             <ReactSelect
               className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
-              options={form?.formFields[props.qno]?.options?.map((op) => ({
+              options={(
+                form?.formFields[props.qno] as SelectField
+              ).options?.map((op: OptionType) => ({
                 value: op.value,
                 label: op.value,
               }))}
@@ -97,9 +109,9 @@ const Questions = (props: { id: any; qno: any }) => {
                       return {
                         ...item,
                         value: e.map((x) => x.value),
-                      };
+                      } as formField;
                     }
-                    return item;
+                    return item as formField;
                   }),
                 })
               }
@@ -108,23 +120,6 @@ const Questions = (props: { id: any; qno: any }) => {
           ) : (
             <></>
           )}
-          {/* <input
-            className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
-            type={form?.formFields[props.qno]?.type}
-            value={form?.formFields[props.qno]?.value}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setForm({
-                ...form,
-                formFields: form.formFields.map((item, idx) => {
-                  if (idx === Number(props.qno)) {
-                    return { ...item, value: e.target.value };
-                  }
-                  return item;
-                }),
-              });
-            }}
-            placeholder={form?.formFields[props.qno]?.label}
-          /> */}
         </div>
 
         <div className="flex justify-center gap-2">

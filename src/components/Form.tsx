@@ -1,7 +1,13 @@
 import { navigate } from "raviger";
 import React, { useEffect, useRef } from "react";
 import AddOptions from "./Inputs/AddOptions";
-import { formData, formField, InputTypes, OptionType } from "./model";
+import {
+  formData,
+  formField,
+  OptionType,
+  SelectTypes,
+  TextTypes,
+} from "./model";
 
 const formFields: formField[] = [
   { id: 1, label: "First Name", type: "text", value: "" },
@@ -161,7 +167,7 @@ export default function Form(props: { formId: number }) {
                 setFormState({
                   ...formState,
                   formFields: formState.formFields.map((item) => {
-                    const type = e.target.value as InputTypes;
+                    const type = e.target.value as SelectTypes | TextTypes;
                     if (item.id === field.id) {
                       if (
                         type === "select" ||
@@ -171,7 +177,7 @@ export default function Form(props: { formId: number }) {
                       ) {
                         return { ...item, type, options: [] };
                       }
-                      return { ...item, type };
+                      return { ...item, type } as formField;
                     }
                     return item;
                   }),
@@ -189,11 +195,11 @@ export default function Form(props: { formId: number }) {
               <option value={"multiselect"}>Multi-Select Dropdown</option>
             </select>
             {field.type &&
-            field.options &&
             (field.type === "select" ||
               field.type === "radio" ||
               field.type === "checkbox" ||
-              field.type === "multiselect") ? (
+              field.type === "multiselect") &&
+            field.options ? (
               <AddOptions
                 options={field.options}
                 optionAddHandler={optionAddHandler}
@@ -245,7 +251,7 @@ export default function Form(props: { formId: number }) {
           className="border-2 border-gray-200 rounded-lg p-2 m-2 w-full"
           value={newField?.type}
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-            const type = e.target.value as InputTypes;
+            const type = e.target.value as SelectTypes | TextTypes;
             if (
               type === "select" ||
               type === "radio" ||
@@ -254,7 +260,7 @@ export default function Form(props: { formId: number }) {
             ) {
               return setNewField({ ...newField, type, options: [] });
             }
-            return setNewField({ ...newField, type });
+            return setNewField({ ...newField, type } as formField);
           }}
         >
           <option value={"text"}>Text</option>
@@ -270,17 +276,40 @@ export default function Form(props: { formId: number }) {
         <button
           className="bg-blue-600 text-white rounded-lg p-2 m-2 w-full"
           onClick={() => {
+            let newFormField;
+            if (
+              newField.type === "select" ||
+              newField.type === "radio" ||
+              newField.type === "checkbox" ||
+              newField.type === "multiselect"
+            ) {
+              newFormField = {
+                id: Number(Date.now()),
+                label: newField?.label,
+                value: newField?.type === "multiselect" ? [] : "",
+                type: newField?.type,
+                options: newField?.options,
+              };
+            } else if (
+              newField.type === "text" ||
+              newField.type === "email" ||
+              newField.type === "password" ||
+              newField.type === "textarea" ||
+              newField.type === "date"
+            ) {
+              newFormField = {
+                id: Number(Date.now()),
+                label: newField?.label,
+                value: newField?.value,
+                type: newField?.type,
+              };
+            } else return;
+
             setFormState({
               ...formState,
               formFields: [
                 ...(formState.formFields as formField[]),
-                {
-                  id: Number(Date.now()),
-                  label: newField?.label,
-                  value: newField?.type === "multiselect" ? [] : "",
-                  type: newField?.type as InputTypes,
-                  options: newField?.options,
-                },
+                newFormField,
               ],
             });
             setNewField({
@@ -295,11 +324,11 @@ export default function Form(props: { formId: number }) {
         </button>
       </div>
       {newField.type &&
-      newField.options &&
       (newField.type === "select" ||
         newField.type === "radio" ||
         newField.type === "checkbox" ||
-        newField.type === "multiselect") ? (
+        newField.type === "multiselect") &&
+      newField.options ? (
         <AddOptions
           options={newField.options}
           optionAddHandler={optionAddHandler}
